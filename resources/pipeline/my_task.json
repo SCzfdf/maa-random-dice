@@ -1,0 +1,14 @@
+{
+    "screenshot": {
+        "action": "Custom",
+        "custom_action": "screenshotAction",
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "customMonitorDice": {
+        "action": "Custom",
+        "custom_action": "recognitionStonAction",
+        "post_delay": 0,
+        "pre_delay": 0
+    }
+}

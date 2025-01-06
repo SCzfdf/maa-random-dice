@@ -26,7 +26,7 @@ import java.util.Map;
 @Slf4j
 @Component
 public class StartHandler {
-//    private final Tasker tasker;
+    private final Tasker tasker;
     private final Resource resource;
     private final Controller controller;
 
@@ -34,8 +34,8 @@ public class StartHandler {
     private static Node redDiceNode = null;
     private static Node blueDiceNode = null;
 
-    public StartHandler(Resource resource, Controller controller) {
-//        this.tasker = tasker;
+    public StartHandler(Resource resource, Controller controller, Tasker tasker) {
+        this.tasker = tasker;
         this.resource = resource;
         this.controller = controller;
     }
@@ -54,16 +54,37 @@ public class StartHandler {
 
 //        loopScreenshot();
         new Thread(this::loopScreenshot).start();
-        ThreadUtil.sleep(5000);
+//        ThreadUtil.sleep(5000);
 
         for (int i = 0; i < 15; i++) {
-            if (i == 1) {
-                int finalI = i;
-                Utils.executeRecognitionDiceTask(() -> loopRecognitionDice(finalI));
-            }
+            int finalI = i;
+            Utils.executeRecognitionDiceTask(() -> loopRecognitionDice(finalI));
         }
 
-//        new Thread(this::loopSwipe).start();
+        // new Thread(this::loopSwipe).start();
+        new Thread(() -> showBoard(diceList)).start();
+    }
+
+    public static void showBoard(List<Dice> diceList) {
+        while (true) {
+            ThreadUtil.sleep(3000);
+            StringBuilder logLine = new StringBuilder();
+
+            for (int i = 0; i < diceList.size(); i++) {
+                logLine.append(diceList.get(i).getType()).append(" ");
+
+                // 每5个数据输出一行日志
+                if ((i + 1) % 5 == 0) {
+                    log.info(logLine.toString().trim());
+                    logLine = new StringBuilder();
+                }
+            }
+
+            // 处理最后一行不足5个的情况
+            if (!logLine.isEmpty()) {
+                log.info(logLine.toString().trim());
+            }
+        }
     }
 
     private void loopSwipe() {
@@ -113,7 +134,7 @@ public class StartHandler {
                                         "pre_delay", 0,
                                         "post_delay", 0)
                         ));
-                taskFuture.wait();
+                taskFuture.waiting();
                 TaskDetail taskDetail = taskFuture.get();
                 log.info("Screenshot time:{}, result:{}", System.currentTimeMillis() - now, taskDetail);
             }
@@ -122,15 +143,18 @@ public class StartHandler {
 
     @SneakyThrows
     private void loopRecognitionDice(int finalI) {
-        while (true) {
-            TaskFuture<TaskDetail> taskFuture = maaConfig.getTasker(resource, controller).postPipeline("customMonitorDice",
-                    Map.of("customMonitorDice",
-                            Map.of("action", "Custom",
-                                    "custom_action", "recognition_ston_action_" + finalI,
-                                    "pre_delay", 0,
-                                    "post_delay", 0)
-                    ));
-            log.info("Recognition dice:{}", taskFuture);
+        try (Tasker tasker = new Tasker()) {
+            tasker.bind(resource, controller);
+            while (true) {
+                TaskFuture<TaskDetail> taskFuture = tasker.postPipeline("customMonitorDice",
+                        Map.of("customMonitorDice",
+                                Map.of("action", "Custom",
+                                        "custom_action", "recognition_ston_action_" + finalI,
+                                        "pre_delay", 0,
+                                        "post_delay", 0)
+                        ));
+                taskFuture.waiting();
+            }
         }
     }
 

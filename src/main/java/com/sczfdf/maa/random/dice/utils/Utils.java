@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +39,9 @@ public class Utils {
             return 0;
         }
 
-        return (double) bestResult.getOrDefault("score", bestResult.getOrDefault("count", 0));
+        Object orDefault = bestResult.getOrDefault("score", bestResult.getOrDefault("count", 0));
+        return orDefault instanceof BigDecimal ?
+                ((BigDecimal) orDefault).doubleValue() : (int) orDefault;
     }
 
     public static boolean compare(RecognitionDetail recognitionDetail1, RecognitionDetail recognitionDetail2) {

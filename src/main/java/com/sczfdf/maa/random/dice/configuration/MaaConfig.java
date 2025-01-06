@@ -38,7 +38,7 @@ public class MaaConfig {
         this.applicationContext = applicationContext;
     }
 
-//    @Bean
+    @Bean
     public Tasker getTasker(Resource resource, Controller controller) {
         Tasker tasker = new Tasker();
         tasker.bind(resource, controller);

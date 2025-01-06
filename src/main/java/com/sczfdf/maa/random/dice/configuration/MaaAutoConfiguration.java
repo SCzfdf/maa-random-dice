@@ -27,8 +27,10 @@ public class MaaAutoConfiguration {
     )
     @ConditionalOnMissingBean({Maa.class})
     public Maa maa(MaaProperties properties) {
-//        properties.setStdoutLevel(MaaLoggingLevelEunm.WARN);
-        properties.setStdoutLevel(MaaLoggingLevelEunm.INFO);
+        properties.setStdoutLevel(MaaLoggingLevelEunm.WARN);
+        properties.setRecording(true);
+        properties.setSaveDraw(true);
+//        properties.setStdoutLevel(MaaLoggingLevelEunm.INFO);
         MaaOptions options = this.toOptions(properties);
         log.debug("Maa options: {}", options);
         return Maa.create(options);
